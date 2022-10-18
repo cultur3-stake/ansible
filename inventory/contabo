@@ -1,0 +1,5 @@
+#!/bin/bash
+
+if [ "$1" = '--list' ]; then
+    echo $(npx -y @cultur3/contabo-inventory@latest $CONTABO_CLIENT_ID $CONTABO_CLIENT_SECRET $CONTABO_API_USER $CONTABO_API_PASS)
+fi
