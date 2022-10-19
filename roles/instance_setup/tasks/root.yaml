@@ -1,3 +1,9 @@
+- name: Authorize new public key
+  authorized_key:
+    user: "{{ target_user_name }}"
+    state: present
+    key: "{{ lookup('file', '~/.ssh/id_c3s.pub') }}"
+
 - name: Write .alias to home
   copy:
     src: .alias
