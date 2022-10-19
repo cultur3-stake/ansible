@@ -1,0 +1,36 @@
+- name: Write .alias to home
+  copy:
+    src: .alias
+    dest: ~/
+
+- name: Write .motd to home
+  copy:
+    src: .motd
+    dest: ~/
+
+- name: Write .zsh_plugins.list to home
+  copy:
+    src: .zsh_plugins.list
+    dest: ~/
+
+- name: Write .oh-my-zsh-install.sh to home
+  copy:
+    src: .oh-my-zsh-install.sh
+    dest: ~/
+
+  # XXX: use async because this hangs otherwise
+- name: Install oh-my-zsh
+  shell: sh ~/.oh-my-zsh-install.sh
+  args: 
+    creates: ~/.oh-my-zsh
+  async: 10
+
+- name: Install antidote
+  shell: git clone --depth=1 https://github.com/mattmc3/antidote.git ~/.antidote
+  args:
+    creates: ~/.antidote
+
+- name: Write .zshrc to new user's home dir
+  copy:
+    src: .zshrc
+    dest: ~/

@@ -14,6 +14,14 @@
 - name: Make zsh default
   shell: chsh -s /bin/zsh
 
+- name: Configure new user
+  include_tasks: user.yaml
+  when: target_user_name != 'root'
+
+- name: Configure root user
+  include_tasks: root.yaml
+  when: target_user_name == 'root'
+
 - name: Get n(ode) install file
   get_url: 
     url: https://raw.githubusercontent.com/tj/n/master/bin/n
@@ -28,48 +36,6 @@
     path: /tmp/n
     state: absent
 
-- name: Create .bash_files directory
-  file:
-    path: /etc/skel/.bash_files 
-    state: directory
-
-- name: Check for existing .bash_files file
-  stat: 
-    path: /etc/skel/.bash_files/.bashrc
-  register: bash_files_file
-
-- name: Move files to .bash_files directory
-  command: mv /etc/skel/.bash_logout /etc/skel/.bashrc /etc/skel/.profile /etc/skel/.bash_files
-  when: bash_files_file.stat.exists == false
-
-- name: Write .alias to skel
-  copy:
-    src: .alias
-    dest: /etc/skel
-
-- name: Write .motd to skel
-  copy:
-    src: .motd
-    dest: /etc/skel
-
-- name: Write .zsh_plugins.list to skel
-  copy:
-    src: .zsh_plugins.list
-    dest: /etc/skel
-
-- name: Add new user
-  user:
-    name: "{{ target_user_name }}"
-    shell: /bin/zsh
-    password: $6$rounds=656000$ybVbAiI7SHxBffOS$bAV6r4lixxOgy9HgGwRWbM.g.zMDVbuRJOEu52VqMYSiB3RjdKtEGTRBn.BPsFBhFWo2/hP0KpmJsyEDUS2E81
-    groups: sudo
-
-- name: Authorize new user public key
-  authorized_key:
-    user: "{{ target_user_name }}"
-    state: present
-    key: "{{ lookup('file', '~/.ssh/id_c3s.pub') }}"
-
 - name: Update firewall settings
   ufw:
     rule: allow
@@ -78,46 +44,6 @@
 - name: Enable UFW
   ufw:
     state: enabled
-
-- block:
-  - name: Write .oh-my-zsh-install.sh to home
-    copy:
-      src: .oh-my-zsh-install.sh
-      dest: ~/
-
-  - name: Install oh-my-zsh
-    shell: sh ~/.oh-my-zsh-install.sh
-    args: 
-      creates: ~/.oh-my-zsh
-
-  - name: Install antidote
-    shell: git clone --depth=1 https://github.com/mattmc3/antidote.git ~/.antidote
-    args:
-      creates: ~/.antidote
-
-  - name: Write .zshrc to new user's home dir
-    copy:
-      src: .zshrc
-      dest: ~/
-  become: true
-  become_user: "{{ target_user_name }}"
-
-- block:
-  - name: Configure subdomain
-    include_role:
-      name: subdomain
-
-  - name: Register whitespace needed for overwriting .motd
-    shell: printf "%*s%s" {{ subdomain | length }} ''
-    register: motd_whitespace
-
-  - name: Update .motd
-    become: true
-    become_user: "{{ target_user_name }}"
-    shell: |
-      sed -i "s/^/$(printf "%*s%s" {{ (subdomain | length) + 2 }})/" ~/.motd
-      sed -i '6s/ */ {{ subdomain }}. /' ~/.motd
-  when: configure_subdomain != false
 
 - name: Disable root login
   lineinfile:
@@ -141,9 +67,11 @@
     backrefs: yes
 
 - name: Increase SSH timeout
-  lineinfile: 
+  lineinfile:
     path: /etc/ssh/sshd_config
+    regexp: '^#ClientAliveInterval 0$'
     line: ClientAliveInterval 3600
+    backrefs: yes
 
 - name: Restart sshd service 
   systemd:
