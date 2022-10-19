@@ -1,0 +1,2 @@
+alias ip="dig @resolver1.opendns.com A myip.opendns.com +short -4"
+alias info="hostnamectl"
