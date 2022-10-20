@@ -1,3 +1,9 @@
+- name: Authorize new user public key
+  authorized_key:
+    user: "{{ target_user_name }}"
+    state: present
+    key: "{{ lookup('file', '~/.ssh/id_c3s.pub') }}"
+
 - name: Create .bash_files directory
   file:
     path: /etc/skel/.bash_files 
@@ -27,18 +33,17 @@
     src: .zsh_plugins.list
     dest: /etc/skel
 
+- name: Write .hushlogin to skel
+  file:
+    path: /etc/skel/.hushlogin
+    state: touch
+
 - name: Add new user
   user:
     name: "{{ target_user_name }}"
     shell: /bin/zsh
-    password: $6$rounds=656000$ybVbAiI7SHxBffOS$bAV6r4lixxOgy9HgGwRWbM.g.zMDVbuRJOEu52VqMYSiB3RjdKtEGTRBn.BPsFBhFWo2/hP0KpmJsyEDUS2E81
+    password: "{{ target_user_pass }}"
     groups: sudo
-
-- name: Authorize new user public key
-  authorized_key:
-    user: "{{ target_user_name }}"
-    state: present
-    key: "{{ lookup('file', '~/.ssh/id_c3s.pub') }}"
 
 - block:
   - name: Write .oh-my-zsh-install.sh to home
@@ -62,3 +67,10 @@
       dest: ~/
   become: true
   become_user: "{{ target_user_name }}"
+
+- name: Disable root login
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: '^PermitRootLogin yes$'
+    line: 'PermitRootLogin no'
+    backrefs: yes

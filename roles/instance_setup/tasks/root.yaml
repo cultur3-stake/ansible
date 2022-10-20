@@ -24,7 +24,12 @@
     src: .oh-my-zsh-install.sh
     dest: ~/
 
-  # XXX: use async because this hangs otherwise
+- name: Write .hushlogin to to home
+  file:
+    path: ~/.hushlogin
+    state: touch
+
+# XXX: use async because Ansible hangs otherwise
 - name: Install oh-my-zsh
   shell: sh ~/.oh-my-zsh-install.sh
   args: 

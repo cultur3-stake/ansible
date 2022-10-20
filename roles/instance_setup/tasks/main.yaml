@@ -1,11 +1,16 @@
 ---
+- name: Update kernel
+  include_tasks: 'update_kernel.yaml'
+  when: ansible_facts.kernel == default_contabo_kernel
+
 - name: Install packages
   package:
     name:
       - build-essential
       - zsh
-      - python3-pip
       - git 
+      - python3-pip
+      - screen
       - jq
       - lolcat
     state: latest
@@ -36,22 +41,6 @@
     path: /tmp/n
     state: absent
 
-- name: Update firewall settings
-  ufw:
-    rule: allow
-    name: OpenSSH
-
-- name: Enable UFW
-  ufw:
-    state: enabled
-
-- name: Disable root login
-  lineinfile:
-    path: /etc/ssh/sshd_config
-    regexp: '^PermitRootLogin yes$'
-    line: 'PermitRootLogin no'
-    backrefs: yes
-
 - name: Disallow login via password
   lineinfile:
     path: /etc/ssh/sshd_config
@@ -78,9 +67,11 @@
     name: sshd
     state: restarted
 
-# TODO: Figure this out later
-# - name: Remove root authorized key
-#   authorized_key:
-#     user: root
-#     state: absent
-#     key: "{{ lookup('file', '~/.ssh/id_c3s.pub') }}"
+- name: Update firewall settings
+  ufw:
+    rule: allow
+    name: OpenSSH
+
+- name: Enable UFW
+  ufw:
+    state: enabled

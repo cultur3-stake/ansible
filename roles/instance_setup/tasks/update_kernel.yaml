@@ -1,0 +1,28 @@
+---
+- block:
+  - name: Upgrade the OS
+    apt:
+      upgrade: dist
+      update_cache: yes
+
+  - name: Install Ubuntu Proposed PPA
+    apt_repository:
+      repo: ppa:canonical-kernel-team/proposed
+
+  - name: Install kernel-generic
+    package:
+      name:
+        - linux-headers-5.15.*-*-generic
+        - linux-image-5.15.*-*-generic
+      update_cache: yes
+
+  - name: Reboot to apply kernel upgrade
+    reboot:
+
+  - name: Evaluate kernel version
+    shell: uname -r
+    register: kernel_info
+
+  - name: Log if upgrade was successful
+    debug:
+      msg: "{{ kernel_info }}"

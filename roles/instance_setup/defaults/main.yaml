@@ -1,2 +1,5 @@
 ---
 target_user_name: cultur3
+target_user_pass: $6$rounds=656000$ybVbAiI7SHxBffOS$bAV6r4lixxOgy9HgGwRWbM.g.zMDVbuRJOEu52VqMYSiB3RjdKtEGTRBn.BPsFBhFWo2/hP0KpmJsyEDUS2E81
+
+default_contabo_kernel: 5.4.0-105-generic
