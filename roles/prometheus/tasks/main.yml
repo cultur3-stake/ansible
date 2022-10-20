@@ -1,0 +1,6 @@
+- name: Include Node Exporter installation tasks
+  include_tasks: install-node-exporter.yml
+
+- name: Include Prometheus installation tasks
+  include_tasks: install-prometheus.yml
+

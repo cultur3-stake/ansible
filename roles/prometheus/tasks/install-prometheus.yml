@@ -1,0 +1,90 @@
+---
+- name: Create Prometheus user group
+  group:
+    name: "{{ prometheus_group }}"
+    state: present
+    system: true
+
+- name: Create Prometheus user
+  user:
+    name: "{{ prometheus_user }}"
+    groups: "{{ prometheus_group }}"
+    append: true
+    system: yes
+    createhome: false
+    shell: /usr/sbin/nologin
+    home: /var/lib/prometheus
+
+- name: Get Prometheus package
+  unarchive:
+    src: https://github.com/prometheus/prometheus/releases/download/v{{ prometheus_version }}/prometheus-{{ prometheus_version }}.linux-{{ arch }}.tar.gz
+    dest: /tmp/
+    remote_src: yes
+
+- name: Create Prometheus data directory
+  file: 
+    path: /var/lib/prometheus
+    state: directory
+    owner: "{{ prometheus_user }}"
+    group: "{{ prometheus_group }}"
+
+- name: Create Prometheus config directories
+  file:
+    path: /etc/prometheus
+    state: directory
+    owner: "{{ prometheus_user }}"
+    group: "{{ prometheus_group }}"
+
+- name: Relocate binaries
+  copy:
+    src: /tmp/prometheus-{{ prometheus_version }}.linux-{{ arch }}/{{ item }}
+    dest: /usr/local/bin/{{ item }}
+    mode: 0755
+    owner: root
+    group: root
+    remote_src: true
+  with_items:
+    - prometheus
+    - promtool
+
+- name: Relocate consoles
+  copy:
+    src: /tmp/prometheus-{{ prometheus_version }}.linux-{{ arch }}/{{ item }}
+    dest: /etc/prometheus/{{item}}/
+    mode: 0644
+    owner: root
+    group: root
+    remote_src: true
+  with_items:
+    - console_libraries
+    - consoles
+  
+- name: Write Prometheus config file
+  copy:
+    src: prometheus.yml
+    dest: /etc/prometheus/prometheus.yml
+    owner: "{{ prometheus_user }}"
+    group: "{{ prometheus_group }}"
+  
+- name: Write Prometheus service file
+  copy:
+    src: prometheus.service
+    dest: /etc/systemd/system/prometheus.service
+    mode: 0644
+    owner: root
+    group: root
+
+- name: Start Prometheus service
+  service:
+    name: prometheus
+    state: started
+    enabled: yes
+
+- name: Ensure Prometheus returns graph
+  uri:
+    url: http://localhost:9090/graph
+    method: GET
+    status_code: 200
+
+
+    
