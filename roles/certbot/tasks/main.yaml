@@ -1,0 +1,36 @@
+- name: Install packages
+  package:
+    name:
+      - snapd
+    state: latest
+    update_cache: yes
+
+- name: Install snap core
+  snap:
+    name: core
+
+- name: Install certbot
+  snap:
+    name: certbot
+    classic: true
+
+- name: Symlink for better results
+  file:
+    src: /snap/bin/certbot
+    dest: /usr/bin/certbot
+    state: link
+
+- name: Allow tcp 80
+  ufw:
+    rule: allow
+    port: 80
+    proto: tcp
+
+- name: Allow tcp 443
+  ufw:
+    rule: allow
+    port: 443
+    proto: tcp
+
+- name: Generate new certificate
+  command: certbot certonly --standalone --noninteractive --agree-tos --email {{ certificate_email }} -d {{ target_domain }} 
