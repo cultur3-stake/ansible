@@ -67,7 +67,7 @@
     name: sshd
     state: restarted
 
-- name: Update firewall settings
+- name: Allow OpenSSH
   ufw:
     rule: allow
     name: OpenSSH
