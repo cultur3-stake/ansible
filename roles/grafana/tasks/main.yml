@@ -1,0 +1,63 @@
+---
+- name: Include secrets
+  include_vars: secrets.yml
+
+- name: Install dependencies
+  package:
+    name:
+      - apt-transport-https
+      - software-properties-common
+    state: latest
+    update_cache: yes
+  
+- name: Add GPG key
+  apt_key:
+    url: https://packages.grafana.com/gpg.key
+    state: present
+
+- name: Add source repo to sources list
+  apt_repository:
+    repo: deb https://packages.grafana.com/oss/deb stable main
+    state: present
+    filename: grafana
+
+- name: Install Grafana package
+  package:
+    name:
+      - grafana
+    state: latest
+    update_cache: yes
+
+- name: Write Grafana config
+  template:
+    src: grafana.ini.j2
+    dest: /etc/grafana/grafana.ini
+
+- name: Add datasource config
+  copy:
+    src: datasource.yml
+    dest: /etc/grafana/provisioning/datasources/prometheus.yml
+
+# - name: Add dashboard config
+#   copy:
+#     src: dashboards.yml
+#     dest: /etc/grafana/provisioning/dashboards/dashboards.yml
+
+- name: Add default dashboard JSON
+  copy:
+    src: node-exporter-full.json
+    dest: /usr/share/grafana/public/dashboards/home.json
+
+- name: Allow tcp Grafana port
+  become: true
+  become_user: root
+  ufw:
+    rule: allow
+    port: "{{ grafana_target_port }}"
+    proto: tcp
+  
+- name: Start Grafana service
+  service:
+    name: grafana-server
+    state: started
+    enabled: yes

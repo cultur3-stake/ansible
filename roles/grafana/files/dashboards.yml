@@ -1,0 +1,8 @@
+# /etc/grafana/provisioning/dashboards/dashboards.yml
+apiVersion: 1
+ 
+providers:
+  - name: 'Default'
+    folder: ''
+    options:
+      path: /etc/grafana/provisioning/dashboards
