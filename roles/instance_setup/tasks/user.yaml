@@ -1,6 +1,7 @@
 - name: Move files to .bash_files directory
   command: mv /etc/skel/.bash_logout /etc/skel/.bashrc /etc/skel/.profile /etc/skel/.bash_files
-  creates: /etc/skel/.bash_files
+  args:
+    creates: /etc/skel/.bash_files
 
 - name: Write dotfiles to skel
   copy:
@@ -11,6 +12,7 @@
     - .motd
     - .zsh_plugins.list
     - .hushlogin
+    - .oh-my-zsh-install.sh
 
 - name: Add new user
   user:
@@ -26,18 +28,15 @@
     key: "{{ lookup('file', '~/.ssh/id_c3s.pub') }}"
 
 - block:
-  - name: Write .oh-my-zsh-install.sh to home
-    copy:
-      src: .oh-my-zsh-install.sh
-      dest: ~/
-
   - name: Install oh-my-zsh
     command: sh ~/.oh-my-zsh-install.sh
-    creates: ~/.oh-my-zsh
+    args:
+      creates: ~/.oh-my-zsh
 
   - name: Install antidote
     command: git clone --depth=1 https://github.com/mattmc3/antidote.git ~/.antidote
-    creates: ~/.antidote
+    args:
+      creates: ~/.antidote
 
   - name: Write .zshrc to new user's home dir
     copy:
