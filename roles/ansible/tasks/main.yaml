@@ -1,5 +1,8 @@
 ---
-# Warning: Installing Ansible as root fails
+- name: Fail if target user is root
+  fail:
+    msg: Ansible must not be installed as root user; retry with a different target_user_name
+  when: target_user_name == 'root'
 
 - name: Install deps
   package:
