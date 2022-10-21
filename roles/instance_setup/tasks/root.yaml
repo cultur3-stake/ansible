@@ -4,30 +4,16 @@
     state: present
     key: "{{ lookup('file', '~/.ssh/id_c3s.pub') }}"
 
-- name: Write .alias to home
+- name: Write dotfiles to home
   copy:
-    src: .alias
+    src: "{{ item }}"
     dest: ~/
-
-- name: Write .motd to home
-  copy:
-    src: .motd
-    dest: ~/
-
-- name: Write .zsh_plugins.list to home
-  copy:
-    src: .zsh_plugins.list
-    dest: ~/
-
-- name: Write .oh-my-zsh-install.sh to home
-  copy:
-    src: .oh-my-zsh-install.sh
-    dest: ~/
-
-- name: Write .hushlogin to to home
-  file:
-    path: ~/.hushlogin
-    state: touch
+  loop:
+    - .alias
+    - .motd
+    - .zsh_plugins.list
+    - .hushlogin
+    - .oh-my-zsh-install.sh
 
 # XXX: use async because Ansible hangs otherwise
 - name: Install oh-my-zsh
