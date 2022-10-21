@@ -1,8 +1,3 @@
-- name: Move files to .bash_files directory
-  command: mkdir -p /etc/skel/.bash_files; mv /etc/skel/.bash_logout /etc/skel/.bashrc /etc/skel/.profile /etc/skel/.bash_files
-  args:
-    creates: /etc/skel/.bash_files
-
 - name: Write dotfiles to skel
   copy:
     src: "{{ item }}"
