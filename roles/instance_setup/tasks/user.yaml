@@ -1,9 +1,3 @@
-- name: Authorize new user public key
-  authorized_key:
-    user: "{{ target_user_name }}"
-    state: present
-    key: "{{ lookup('file', '~/.ssh/id_c3s.pub') }}"
-
 - name: Create .bash_files directory
   file:
     path: /etc/skel/.bash_files 
@@ -44,6 +38,12 @@
     shell: /bin/zsh
     password: "{{ target_user_pass }}"
     groups: sudo
+
+- name: Authorize new user public key
+  authorized_key:
+    user: "{{ target_user_name }}"
+    state: present
+    key: "{{ lookup('file', '~/.ssh/id_c3s.pub') }}"
 
 - block:
   - name: Write .oh-my-zsh-install.sh to home
