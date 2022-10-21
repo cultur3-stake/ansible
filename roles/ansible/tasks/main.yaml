@@ -1,0 +1,14 @@
+---
+# Warning: Installing Ansible as root fails
+
+- name: Install deps
+  package:
+    name: 
+      - python3-distutils
+    state: latest
+    update_cache: yes
+
+- name: Install via python3
+  command: python3 -m pip install --user ansible
+  become: true
+  become_user: "{{ target_user_name }}"
