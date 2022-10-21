@@ -23,4 +23,5 @@ if [[ ! $static_file -nt $plugins_list ]]; then
     antidote bundle <$plugins_list >$static_file
 fi
 
+source $static_file
 source $ZSH/oh-my-zsh.sh
