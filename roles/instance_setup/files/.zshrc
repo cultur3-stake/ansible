@@ -1,3 +1,6 @@
+# PATH
+export PATH="$PATH:~/.local/bin"
+
 # ALIAS
 source "$HOME/.alias"
 
