@@ -5,10 +5,6 @@
       upgrade: dist
       update_cache: yes
 
-  - name: Install Ubuntu Proposed PPA
-    apt_repository:
-      repo: ppa:canonical-kernel-team/proposed
-
   - name: Install kernel-generic
     package:
       name:
