@@ -61,7 +61,7 @@
   
 - name: Write Prometheus config file
   copy:
-    src: prometheus.yml
+    src: prometheus.yaml
     dest: "{{ prometheus_config_file }}"
     owner: "{{ prometheus_user }}"
     group: "{{ prometheus_group }}"
