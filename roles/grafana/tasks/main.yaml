@@ -50,7 +50,7 @@
 - name: Set cert permissions
   file:
     path: /etc/grafana/certs
-    sttate: directory
+    state: directory
     recurse: yes
     group: grafana
     mode: 0670
