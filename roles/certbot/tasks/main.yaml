@@ -34,3 +34,5 @@
 
 - name: Generate new certificate
   command: certbot certonly --standalone --noninteractive --agree-tos --email {{ certificate_email }} -d {{ target_domain }} 
+  args:
+    creates: /etc/letsencrypt/live/{{ target_domain }}
