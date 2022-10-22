@@ -37,19 +37,23 @@
   file:
     path: /etc/grafana/certs
     state: directory
-    group: grafana
-    mode: 640
 
 - name: Copy over cert files
   copy:
     src: /etc/letsencrypt/live/{{ target_domain }}/{{ item }}.pem
     dest: /etc/grafana/certs/{{ target_domain }}-{{ item }}.pem
-    group: grafana
     remote_src: yes
-    mode: 640
   loop:
     - fullchain
     - privkey 
+
+- name: Set cert permissions
+  file:
+    path: /etc/grafana/certs
+    sttate: directory
+    recurse: yes
+    group: grafana
+    mode: 670
 
 - name: Add datasource config
   copy:
