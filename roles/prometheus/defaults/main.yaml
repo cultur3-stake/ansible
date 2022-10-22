@@ -9,7 +9,7 @@ prometheus_version: 2.38.0
 
 prometheus_bin_path: /usr/local/bin
 prometheus_config_path: /etc/prometheus
-prometheus_config_file: "{{ prometheus_config_path }}/prometheus.yml"
+prometheus_config_file: "{{ prometheus_config_path }}/prometheus.yaml"
 prometheus_data_path: /var/lib/prometheus
 
 prometheus_retention_time: 5d
