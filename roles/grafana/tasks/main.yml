@@ -53,7 +53,7 @@
     sttate: directory
     recurse: yes
     group: grafana
-    mode: 670
+    mode: 0670
 
 - name: Add datasource config
   copy:
