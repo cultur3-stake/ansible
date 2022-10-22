@@ -6,3 +6,12 @@ node_exporter_version: 1.4.0
 prometheus_user: prometheus
 prometheus_group: prometheus
 prometheus_version: 2.38.0
+
+prometheus_bin_path: /usr/local/bin
+prometheus_config_path: /etc/prometheus
+prometheus_config_file: "{{ prometheus_config_path }}/prometheus.yml"
+prometheus_data_path: /var/lib/prometheus
+
+prometheus_retention_time: 5d
+
+prometheus_exec_command: "{{ prometheus_bin_path }}/prometheus --config.file {{ prometheus_config_file }} --storage.tsdb.path {{ prometheus_data_path }}/ --storage.tsdb.retention.time={{ prometheus_retention_time }} --web.console.templates={{ prometheus_config_path }}/consoles --web.console.libraries={{ prometheus_config_path }}/console_libraries"

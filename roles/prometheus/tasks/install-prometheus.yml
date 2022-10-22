@@ -13,7 +13,7 @@
     system: yes
     createhome: false
     shell: /usr/sbin/nologin
-    home: /var/lib/prometheus
+    home: "{{ prometheus_data_path }}"
 
 - name: Get Prometheus package
   unarchive:
@@ -23,14 +23,14 @@
 
 - name: Create Prometheus data directory
   file: 
-    path: /var/lib/prometheus
+    path: "{{ prometheus_data_path }}"
     state: directory
     owner: "{{ prometheus_user }}"
     group: "{{ prometheus_group }}"
 
 - name: Create Prometheus config directories
   file:
-    path: /etc/prometheus
+    path: "{{ prometheus_config_path }}"
     state: directory
     owner: "{{ prometheus_user }}"
     group: "{{ prometheus_group }}"
@@ -38,42 +38,42 @@
 - name: Relocate binaries
   copy:
     src: /tmp/prometheus-{{ prometheus_version }}.linux-{{ arch }}/{{ item }}
-    dest: /usr/local/bin/{{ item }}
+    dest: "{{ prometheus_bin_path }}/{{ item }}"
     mode: 0755
     owner: root
     group: root
     remote_src: true
-  with_items:
+  loop:
     - prometheus
     - promtool
 
 - name: Relocate consoles
   copy:
     src: /tmp/prometheus-{{ prometheus_version }}.linux-{{ arch }}/{{ item }}
-    dest: /etc/prometheus/{{item}}/
+    dest: "{{ prometheus_config_path }}/{{item}}"
     mode: 0644
     owner: root
     group: root
     remote_src: true
-  with_items:
+  loop:
     - console_libraries
     - consoles
   
 - name: Write Prometheus config file
   copy:
     src: prometheus.yml
-    dest: /etc/prometheus/prometheus.yml
+    dest: "{{ prometheus_config_file }}"
     owner: "{{ prometheus_user }}"
     group: "{{ prometheus_group }}"
   
-- name: Write Prometheus service file
-  copy:
-    src: prometheus.service
+- name: Wirte Prometheus service template
+  template: 
+    src: prometheus.servce.j2
     dest: /etc/systemd/system/prometheus.service
     mode: 0644
     owner: root
     group: root
-
+  
 - name: Start Prometheus service
   service:
     name: prometheus
