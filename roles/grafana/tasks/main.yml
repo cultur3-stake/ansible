@@ -38,11 +38,6 @@
     src: datasource.yml
     dest: /etc/grafana/provisioning/datasources/prometheus.yml
 
-# - name: Add dashboard config
-#   copy:
-#     src: dashboards.yml
-#     dest: /etc/grafana/provisioning/dashboards/dashboards.yml
-
 - name: Add default dashboard JSON
   copy:
     src: node-exporter-full.json
