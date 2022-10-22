@@ -33,6 +33,24 @@
     src: grafana.ini.j2
     dest: /etc/grafana/grafana.ini
 
+- name: Create Grafana cert directory
+  file:
+    path: /etc/grafana/certs
+    state: directory
+    group: grafana
+    mode: 640
+
+- name: Copy over cert files
+  copy:
+    src: /etc/letsencrypt/live/{{ target_domain }}/{{ item }}.pem
+    dest: /etc/grafana/certs/{{ target_domain }}-{{ item }}.pem
+    group: grafana
+    remote_src: yes
+    mode: 640
+  loop:
+    - fullchain
+    - privkey 
+
 - name: Add datasource config
   copy:
     src: datasource.yml
