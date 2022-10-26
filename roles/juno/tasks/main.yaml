@@ -1,0 +1,88 @@
+---
+- name: Install and configure junod/cosmovisor
+  include_tasks: '{{ installation_item }}'
+  loop:
+    - install_junod.yaml
+    - install_cosmovisor.yaml
+  loop_control:
+    loop_var: installation_item
+  when: '"~/juno" is not directory'
+
+- name: Set min gas prices
+  lineinfile:
+    path: ~/.juno/config/app.toml
+    regexp: '^minimum-gas-prices = ""$'
+    line: 'minimum-gas-prices = "{{ juno_minimum_gas_price }}"'
+
+- block:
+    - name: Get persistent peers
+      uri:
+        url: '{{ juno_chain_repo }}/persistent_peers.txt'
+        return_content: yes
+      register: peers_response
+
+    - name: Set persistent peers
+      lineinfile:
+        path: ~/.juno/config/config.toml
+        regexp: '^persistent_peers = ""$'
+        line: 'persistent_peers = "{{ peers_response.content | trim }}"'
+  when: juno_target_net == 'testnet'
+
+- block:
+    - name: Get seeds
+      uri:
+        url: '{{ juno_chain_repo }}/seeds.txt'
+        return_content: yes
+      register: seeds_response
+
+    - name: Set seeds
+      lineinfile:
+        path: ~/.juno/config/config.toml
+        regexp: '^seeds = ""$'
+        line: 'seeds = "{{ seeds_response.content | trim }}"'
+  when: juno_target_net == 'mainnet'
+
+- name: Initialize env vars
+  lineinfile:
+    path: ~/.zshrc
+    regexp: '{{ item.regexp }}'
+    line: '{{ item.line }}'
+  loop:
+    - {
+        regexp: '^export CHAIN_ID=.+$',
+        line: 'export CHAIN_ID={{ juno_chain_id }}',
+      }
+    - {
+        regexp: '^export MONIKER_NAME=.+$',
+        line: 'export MONIKER_NAME="{{ juno_moniker }}"',
+      }
+
+- name: Download genesis file for testnet
+  uri:
+    url: '{{ juno_chain_repo }}/genesis.json'
+    dest: ~/.juno/config
+    remote_src: yes
+  when: juno_target_net == 'testnet'
+
+- name: Download genesis file for mainnet
+  unarchive:
+    src: https://download.dimi.sh/juno-phoenix2-genesis.tar.gz
+    dest: ~/.juno/config
+    remote_src: yes
+  when: juno_target_net == 'mainnet'
+
+- name: Enable and start junod service
+  become: true
+  systemd:
+    state: started
+    daemon_reload: yes
+    enabled: yes
+    name: junod
+
+- name: Get junod service status
+  systemd:
+    name: junod
+  register: junod_service_stats
+
+- debug:
+    var: junod_service_stats.status.ActiveState

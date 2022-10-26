@@ -1,0 +1,79 @@
+---
+- block:
+    # Note that many of these packages will already be installed by
+    # instance_setup; offering redundancy here is for the sake of modularity
+    - name: Install Juno-related deps
+      package:
+        name:
+          - make
+          - build-essential
+          - gcc
+          - git
+          - jq
+          - chrony
+        state: latest
+        update_cache: yes
+
+    - name: Install go
+      unarchive:
+        src: https://golang.org/dl/go1.19.2.linux-amd64.tar.gz
+        dest: /usr/local
+        remote_src: yes
+  become: true
+
+- name: Initialize env vars
+  lineinfile:
+    path: ~/.zshrc
+    regexp: '{{ item.regexp }}'
+    line: '{{ item.line }}'
+  loop:
+    - { regexp: '^export GOROOT=.+$', line: 'export GOROOT=/usr/local/go' }
+    - { regexp: '^export GOPATH=.+$', line: 'export GOPATH=$HOME/go' }
+    - { regexp: '^export GO111MODULE=.+$', line: 'export GO111MODULE=on' }
+    - {
+        regexp: '^export PATH=$PATH:/usr/local/go/bin:$HOME/go/bin$',
+        line: 'export PATH=$PATH:/usr/local/go/bin:$HOME/go/bin',
+      }
+
+- name: Clone Juno
+  git:
+    repo: https://github.com/CosmosContracts/juno
+    dest: ~/juno
+    version: '{{ juno_version_tag }}'
+
+- name: Make! Install!
+  command: make install
+  args:
+    chdir: ~/juno
+  environment:
+    GOROOT: '/usr/local/go'
+    GOPATH: "{{ lookup('env','HOME') }}/go"
+    GO111MODULE: 'on'
+    PATH: "{{ lookup('env','PATH') }}:/go:/usr/local/go/bin:{{ lookup('env','HOME') }}/go/bin"
+
+# XXX: With an interactive shell, `make install`ing creates .juno config
+# files on its own; this doesn't seem possible to replicate with
+# Ansible, so generating files (e.g. app.toml) manually in this manner
+# is necessary
+- name: Initialize junod (creates .juno)
+  command: ~/go/bin/junod init "{{ juno_moniker }}" --chain-id {{ juno_chain_id }}
+  args:
+    creates: ~/.juno
+
+- name: Remove genesis file
+  file:
+    path: ~/.juno/config/genesis.json
+    state: absent
+
+- name: Allow junod ports
+  become: true
+  ufw:
+    rule: allow
+    port: '{{ item }}'
+    proto: tcp
+  loop:
+    - 6060
+    - 9090
+    - 9091
+    - 26656
+    - 26657

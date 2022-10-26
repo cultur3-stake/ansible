@@ -1,0 +1,26 @@
+---
+juno_target_net: testnet
+
+juno_moniker: 'C3S Testnet --alpha'
+
+juno_chain_id_map:
+  testnet: 'uni-5'
+  mainnet: 'juno-1'
+juno_chain_id: '{{ juno_chain_id_map[juno_target_net] }}'
+
+juno_chain_repo_map:
+  testnet: https://raw.githubusercontent.com/CosmosContracts/testnets/main/{{
+    juno_chain_id }}
+  mainnet: https://raw.githubusercontent.com/CosmosContracts/mainnet/main/{{
+    juno_chain_id }}
+juno_chain_repo: '{{ juno_chain_repo_map[juno_target_net] }}'
+
+juno_version_tag_map:
+  testnet: 'v9.0.0'
+  mainnet: 'v10.0.2'
+juno_version_tag: '{{ juno_version_tag_map[juno_target_net] }}'
+
+juno_minimum_gas_price_map:
+  testnet: 0.0025ujunox
+  mainnet: 0.0025ujuno,0.001ibc/C4CFF46FD6DE35CA4CF4CE031E643C8FDC9BA4B99AE598E9B0ED98FE3A2319F9
+juno_minimum_gas_price: '{{ juno_minimum_gas_price_map[juno_target_net] }}'

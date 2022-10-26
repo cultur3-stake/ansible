@@ -1,0 +1,36 @@
+---
+- name: Install Cosmovisor
+  command: /usr/local/go/bin/go install github.com/cosmos/cosmos-sdk/cosmovisor/cmd/cosmovisor@latest
+
+- name: Initialize env vars
+  lineinfile:
+    path: ~/.zshrc
+    line: '{{ item.line }}'
+  loop:
+    - { regexp: '^export DAEMON_NAME=junod$', line: 'export DAEMON_NAME=junod' }
+    - {
+        regexp: '^export DAEMON_HOME="$HOME/.juno"$',
+        line: 'export DAEMON_HOME="$HOME/.juno"',
+      }
+
+- name: Create necessary directories
+  file:
+    path: ~/.juno/{{ item }}
+    state: directory
+    recurse: yes
+  loop:
+    - cosmovisor/genesis/bin
+    - cosmovisor/upgrades
+
+- name: Copy over junod binary
+  copy:
+    src: ~/go/bin/junod
+    dest: ~/.juno/cosmovisor/genesis/bin
+    mode: 0775
+    remote_src: yes
+
+- name: Create junod service file
+  become: true
+  template:
+    src: junod.service.j2
+    dest: /etc/systemd/system/junod.service

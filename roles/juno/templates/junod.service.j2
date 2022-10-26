@@ -1,0 +1,17 @@
+[Unit]
+Description=Juno Daemon (cosmovisor)
+After=network-online.target
+
+[Service]
+User={{ target_user_name }}
+ExecStart=/home/{{ target_user_name }}/go/bin/cosmovisor run start
+Restart=always
+RestartSec=3
+LimitNOFILE=4096
+Environment="DAEMON_NAME=junod"
+Environment="DAEMON_HOME=/home/{{ target_user_name }}/.juno"
+Environment="DAEMON_ALLOW_DOWNLOAD_BINARIES=false"
+Environment="DAEMON_RESTART_AFTER_UPGRADE=true"
+
+[Install]
+WantedBy=multi-user.target
