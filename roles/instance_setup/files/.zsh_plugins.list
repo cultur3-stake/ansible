@@ -1,6 +1,5 @@
 ohmyzsh/ohmyzsh path:plugins/git
 ohmyzsh/ohmyzsh path:plugins/copyfile
 ohmyzsh/ohmyzsh path:plugins/extract
-djui/alias-tips
 zsh-users/zsh-syntax-highlighting
 zsh-users/zsh-autosuggestions
