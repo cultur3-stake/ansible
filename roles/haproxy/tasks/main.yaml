@@ -1,42 +1,45 @@
 ---
 - block:
-  # In case closed
-  - name: Allow tcp 80
-    ufw:
-      rule: allow
-      port: 80
-      proto: tcp
+    # In case closed
+    - name: Allow tcp 80
+      ufw:
+        rule: allow
+        port: 80
+        proto: tcp
 
-  # In case closed
-  - name: Allow tcp 443
-    ufw:
-      rule: allow
-      port: 443
-      proto: tcp
+    # In case closed
+    - name: Allow tcp 443
+      ufw:
+        rule: allow
+        port: 443
+        proto: tcp
 
-  - name: Install packages
-    package:
-      name:
-        - haproxy
-      state: latest
-      update_cache: yes
+    - name: Install packages
+      package:
+        name:
+          - haproxy
+        state: latest
+        update_cache: yes
 
-  - name: Create haproxy certificates directory
-    file:
-      path: /etc/haproxy/certs
-      state: directory
-      mode: 770
+    - name: Create haproxy certificates directory
+      file:
+        path: /etc/haproxy/certs
+        state: directory
+        mode: 770
 
-  - name: Create haproxy certificate by concating fullchain + privkey
-    shell: bash -c 'cat /etc/letsencrypt/live/{{ target_domain }}/fullchain.pem /etc/letsencrypt/live/{{ target_domain }}/privkey.pem > /etc/haproxy/certs/{{ target_domain }}.pem'
+    - name: Create haproxy certificate by concating fullchain + privkey
+      shell:
+        bash -c 'cat /etc/letsencrypt/live/{{ target_domain }}/fullchain.pem
+        /etc/letsencrypt/live/{{ target_domain }}/privkey.pem >
+        /etc/haproxy/certs/{{ target_domain }}.pem'
 
-  - name: Populate haproxy config
-    template:
-      src: haproxy.cfg.j2
-      dest: /etc/haproxy/haproxy.cfg
+    - name: Populate haproxy config
+      template:
+        src: haproxy.cfg.j2
+        dest: /etc/haproxy/haproxy.cfg
 
-  - name: Restart haproxy service 
-    systemd:
-      name: haproxy
-      state: restarted
+    - name: Restart haproxy service
+      systemd:
+        name: haproxy
+        state: restarted
   when: ansible_facts.services['haproxy.service'] is not defined

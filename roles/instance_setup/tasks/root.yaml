@@ -1,12 +1,12 @@
 - name: Authorize new public key
   authorized_key:
-    user: "{{ target_user_name }}"
+    user: '{{ target_user_name }}'
     state: present
     key: "{{ lookup('file', '~/.ssh/id_c3s.pub') }}"
 
 - name: Write dotfiles to home
   copy:
-    src: "{{ item }}"
+    src: '{{ item }}'
     dest: ~/
   loop:
     - .alias
@@ -18,7 +18,7 @@
 # XXX: use async because Ansible hangs otherwise
 - name: Install oh-my-zsh
   shell: sh ~/.oh-my-zsh-install.sh
-  args: 
+  args:
     creates: ~/.oh-my-zsh
   async: 10
 

@@ -1,6 +1,20 @@
+---
+- name: Get skel contents
+  find:
+    paths: /etc/skel
+    patterns: '*'
+    hidden: yes
+  register: skell_dir
+
+- name: Remove skel contents
+  file:
+    path: '{{ item.path }}'
+    state: absent
+  with_items: '{{ skell_dir.files }}'
+
 - name: Write dotfiles to skel
   copy:
-    src: "{{ item }}"
+    src: '{{ item }}'
     dest: /etc/skel
   loop:
     - .alias
@@ -11,34 +25,34 @@
 
 - name: Add new user
   user:
-    name: "{{ target_user_name }}"
+    name: '{{ target_user_name }}'
     shell: /bin/zsh
-    password: "{{ target_user_pass }}"
+    password: '{{ target_user_pass }}'
     groups: sudo
 
 - name: Authorize new user public key
   authorized_key:
-    user: "{{ target_user_name }}"
+    user: '{{ target_user_name }}'
     state: present
     key: "{{ lookup('file', '~/.ssh/id_c3s.pub') }}"
 
 - block:
-  - name: Install oh-my-zsh
-    command: sh ~/.oh-my-zsh-install.sh
-    args:
-      creates: ~/.oh-my-zsh
+    - name: Install oh-my-zsh
+      command: sh ~/.oh-my-zsh-install.sh
+      args:
+        creates: ~/.oh-my-zsh
 
-  - name: Install antidote
-    command: git clone --depth=1 https://github.com/mattmc3/antidote.git ~/.antidote
-    args:
-      creates: ~/.antidote
+    - name: Install antidote
+      command: git clone --depth=1 https://github.com/mattmc3/antidote.git ~/.antidote
+      args:
+        creates: ~/.antidote
 
-  - name: Write .zshrc to new user's home dir
-    copy:
-      src: .zshrc
-      dest: ~/
+    - name: Write .zshrc to new user's home dir
+      copy:
+        src: .zshrc
+        dest: ~/
   become: true
-  become_user: "{{ target_user_name }}"
+  become_user: '{{ target_user_name }}'
 
 - name: Disable root login
   lineinfile:

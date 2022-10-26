@@ -3,4 +3,3 @@
 
 - name: Include Prometheus installation tasks
   include_tasks: install-prometheus.yaml
-

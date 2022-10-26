@@ -1,44 +1,46 @@
 ---
 - name: Create Prometheus user group
   group:
-    name: "{{ prometheus_group }}"
+    name: '{{ prometheus_group }}'
     state: present
     system: true
 
 - name: Create Prometheus user
   user:
-    name: "{{ prometheus_user }}"
-    groups: "{{ prometheus_group }}"
+    name: '{{ prometheus_user }}'
+    groups: '{{ prometheus_group }}'
     append: true
     system: yes
     createhome: false
     shell: /usr/sbin/nologin
-    home: "{{ prometheus_data_path }}"
+    home: '{{ prometheus_data_path }}'
 
 - name: Get Prometheus package
   unarchive:
-    src: https://github.com/prometheus/prometheus/releases/download/v{{ prometheus_version }}/prometheus-{{ prometheus_version }}.linux-{{ arch }}.tar.gz
+    src: https://github.com/prometheus/prometheus/releases/download/v{{
+      prometheus_version }}/prometheus-{{ prometheus_version }}.linux-{{ arch
+      }}.tar.gz
     dest: /tmp/
     remote_src: yes
 
 - name: Create Prometheus data directory
-  file: 
-    path: "{{ prometheus_data_path }}"
+  file:
+    path: '{{ prometheus_data_path }}'
     state: directory
-    owner: "{{ prometheus_user }}"
-    group: "{{ prometheus_group }}"
+    owner: '{{ prometheus_user }}'
+    group: '{{ prometheus_group }}'
 
 - name: Create Prometheus config directories
   file:
-    path: "{{ prometheus_config_path }}"
+    path: '{{ prometheus_config_path }}'
     state: directory
-    owner: "{{ prometheus_user }}"
-    group: "{{ prometheus_group }}"
+    owner: '{{ prometheus_user }}'
+    group: '{{ prometheus_group }}'
 
 - name: Relocate binaries
   copy:
     src: /tmp/prometheus-{{ prometheus_version }}.linux-{{ arch }}/{{ item }}
-    dest: "{{ prometheus_bin_path }}/{{ item }}"
+    dest: '{{ prometheus_bin_path }}/{{ item }}'
     mode: 0755
     owner: root
     group: root
@@ -50,7 +52,7 @@
 - name: Relocate consoles
   copy:
     src: /tmp/prometheus-{{ prometheus_version }}.linux-{{ arch }}/{{ item }}
-    dest: "{{ prometheus_config_path }}/{{item}}"
+    dest: '{{ prometheus_config_path }}/{{item}}'
     mode: 0644
     owner: root
     group: root
@@ -58,22 +60,22 @@
   loop:
     - console_libraries
     - consoles
-  
+
 - name: Write Prometheus config file
   copy:
     src: prometheus.yaml
-    dest: "{{ prometheus_config_file }}"
-    owner: "{{ prometheus_user }}"
-    group: "{{ prometheus_group }}"
-  
-- name: Wirte Prometheus service template
-  template: 
+    dest: '{{ prometheus_config_file }}'
+    owner: '{{ prometheus_user }}'
+    group: '{{ prometheus_group }}'
+
+- name: Write Prometheus service template
+  template:
     src: prometheus.service.j2
     dest: /etc/systemd/system/prometheus.service
     mode: 0644
     owner: root
     group: root
-  
+
 - name: Start Prometheus service
   service:
     name: prometheus
@@ -85,6 +87,3 @@
     url: http://localhost:9090/graph
     method: GET
     status_code: 200
-
-
-    

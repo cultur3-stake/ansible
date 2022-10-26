@@ -9,7 +9,7 @@
       - software-properties-common
     state: latest
     update_cache: yes
-  
+
 - name: Add GPG key
   apt_key:
     url: https://packages.grafana.com/gpg.key
@@ -45,7 +45,7 @@
     remote_src: yes
   loop:
     - fullchain
-    - privkey 
+    - privkey
 
 - name: Set cert permissions
   file:
@@ -70,9 +70,9 @@
   become_user: root
   ufw:
     rule: allow
-    port: "{{ grafana_target_port }}"
+    port: '{{ grafana_target_port }}'
     proto: tcp
-  
+
 - name: Start Grafana service
   service:
     name: grafana-server

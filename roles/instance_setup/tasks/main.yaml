@@ -8,14 +8,14 @@
     name:
       - build-essential
       - zsh
-      - git 
+      - git
       - python3-pip
       - screen
       - jq
       - lolcat
     state: latest
     update_cache: yes
-      
+
 - name: Make zsh default
   shell: chsh -s /bin/zsh
 
@@ -28,7 +28,7 @@
   when: target_user_name == 'root'
 
 - name: Get n(ode) install file
-  get_url: 
+  get_url:
     url: https://raw.githubusercontent.com/tj/n/master/bin/n
     dest: /tmp/n
     mode: 0755
@@ -62,7 +62,7 @@
     line: ClientAliveInterval 3600
     backrefs: yes
 
-- name: Restart sshd service 
+- name: Restart sshd service
   systemd:
     name: sshd
     state: restarted
