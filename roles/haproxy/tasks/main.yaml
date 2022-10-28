@@ -23,7 +23,7 @@
   when: "'haproxy' not in ansible_facts.packages"
 
 # In case closed
-- name: Allow tcp 80
+- name: Allow tcp ports
   ufw:
     rule: allow
     port: '{{ item.frontend_port }}'
