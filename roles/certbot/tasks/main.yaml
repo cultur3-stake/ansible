@@ -1,3 +1,14 @@
+---
+- name: Ensure mandatory variables are defined
+  assert:
+    that:
+      - '{{ item }} is defined'
+      - '{{ item }} != None'
+    fail_msg: '{{ item }} must be set before executing role'
+  loop:
+    - target_domain
+    - certificate_email
+
 - name: Install packages
   package:
     name:
@@ -20,17 +31,14 @@
     dest: /usr/bin/certbot
     state: link
 
-- name: Allow tcp 80
+- name: Allow default tcp 80
   ufw:
     rule: allow
-    port: 80
+    port: '{{ item }}'
     proto: tcp
-
-- name: Allow tcp 443
-  ufw:
-    rule: allow
-    port: 443
-    proto: tcp
+  loop:
+    - 80
+    - 443
 
 - name: Generate new certificate
   command: certbot certonly --standalone --noninteractive --agree-tos --email {{ certificate_email }} -d {{ target_domain }}
