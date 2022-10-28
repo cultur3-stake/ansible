@@ -1,0 +1,25 @@
+---
+- name: Ensure mandatory variables are defined
+  assert:
+    that:
+      - '{{ item }} is defined'
+      - '{{ item }} != None'
+    fail_msg: '{{ item }} must be set before executing SSL-based configuration'
+  loop:
+    - target_domain
+
+# In case closed
+- name: Allow tcp 443
+  ufw:
+    rule: allow
+    port: 443
+    proto: tcp
+
+- name: Create haproxy certificates directory
+  file:
+    path: /etc/haproxy/certs
+    state: directory
+    mode: 770
+
+- name: Create haproxy certificate by concating fullchain + privkey
+  shell: bash -c 'cat /etc/letsencrypt/live/{{ target_domain }}/fullchain.pem /etc/letsencrypt/live/{{ target_domain }}/privkey.pem > /etc/haproxy/certs/{{ target_domain }}.pem'

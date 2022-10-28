@@ -1,3 +1,11 @@
 ---
-haproxy_backend_port:
-target_domain:
+with_ssl: false
+haproxy_timeout_in_seconds: 60
+haproxy_backend_services:
+  # - app:
+  #   frontend_port: 8080
+  #   backend_port: 3000
+  # - tcp_app:
+  #   mode: tcp
+  #   frontend_port: 8081
+  #   backend_port: 3001

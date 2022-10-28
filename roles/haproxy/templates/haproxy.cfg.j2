@@ -1,6 +1,7 @@
+#jinja2:lstrip_blocks: True
 global
-        log /dev/log    local0
-        log /dev/log    local1 notice
+        log /dev/log local0
+        log /dev/log local1 notice
         chroot /var/lib/haproxy
         stats socket /run/haproxy/admin.sock mode 660 level admin expose-fd listeners
         stats timeout 30s
@@ -9,12 +10,12 @@ global
         daemon
 
 defaults
-        log     global
+        log global
         option  dontlognull
-        timeout connect 60s
-        timeout client  60s
-        timeout server  60s
-        timeout http-request 60s
+        timeout connect {{ haproxy_timeout_in_seconds }}s
+        timeout client {{ haproxy_timeout_in_seconds }}s
+        timeout server {{ haproxy_timeout_in_seconds }}s
+        timeout http-request {{ haproxy_timeout_in_seconds }}s
         errorfile 400 /etc/haproxy/errors/400.http
         errorfile 403 /etc/haproxy/errors/403.http
         errorfile 408 /etc/haproxy/errors/408.http
@@ -23,15 +24,26 @@ defaults
         errorfile 503 /etc/haproxy/errors/503.http
         errorfile 504 /etc/haproxy/errors/504.http
 
-frontend http-frontend
+{% for services in haproxy_services %}
+{% for name, params in services.items() %}
+frontend {{ (params.mode is defined and params.mode) and params.mode or 'http' }}-{{ name }}
+        {% if params.mode is defined and params.mode %}
+        mode {{ params.mode }}
+        {% else %}
         mode http
         option httplog
-        bind :80
+        {% endif %}
+        bind :{{ params.frontend_port }}
+        {% if with_ssl == true %}
         bind :443 ssl crt /etc/haproxy/certs/{{ target_domain }}.pem
         http-request redirect scheme https unless { ssl_fc }
-        default_backend http-backend
+        {% endif %}
+        default_backend {{ (params.mode is defined and params.mode) and params.mode or 'http' }}-{{ name }}
         option forwardfor
 
-backend http-backend
-        mode http
-        server service-backend 127.0.0.1:{{ haproxy_backend_port }}
+backend {{ (params.mode is defined and params.mode) and params.mode or 'http' }}-{{ name }}
+        mode {{ (params.mode is defined and params.mode) and params.mode or 'http' }}
+        server {{ name }} 127.0.0.1:{{ params.backend_port }}
+
+{% endfor %}
+{% endfor %}

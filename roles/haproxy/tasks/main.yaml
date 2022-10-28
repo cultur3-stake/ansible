@@ -1,45 +1,44 @@
 ---
-- block:
-    # In case closed
-    - name: Allow tcp 80
-      ufw:
-        rule: allow
-        port: 80
-        proto: tcp
+- name: Gather package facts
+  package_facts:
+    manager: auto
 
-    # In case closed
-    - name: Allow tcp 443
-      ufw:
-        rule: allow
-        port: 443
-        proto: tcp
+- name: Ensure mandatory variables are defined
+  assert:
+    that:
+      - '{{ item }} is defined'
+      - '{{ item }} != None'
+    fail_msg: '{{ item }} must be set before executing role'
+  loop:
+    - target_user_name
+    - with_ssl
+    - haproxy_services
 
-    - name: Install packages
-      package:
-        name:
-          - haproxy
-        state: latest
-        update_cache: yes
+- name: Install packages
+  package:
+    name:
+      - haproxy
+    state: latest
+    update_cache: yes
+  when: "'haproxy' not in ansible_facts.packages"
 
-    - name: Create haproxy certificates directory
-      file:
-        path: /etc/haproxy/certs
-        state: directory
-        mode: 770
+# In case closed
+- name: Allow tcp 80
+  ufw:
+    rule: allow
+    port: 80
+    proto: tcp
 
-    - name: Create haproxy certificate by concating fullchain + privkey
-      shell:
-        bash -c 'cat /etc/letsencrypt/live/{{ target_domain }}/fullchain.pem
-        /etc/letsencrypt/live/{{ target_domain }}/privkey.pem >
-        /etc/haproxy/certs/{{ target_domain }}.pem'
+- name: Configure SSL if desired
+  include_tasks: configure_ssl.yaml
+  when: with_ssl == true
 
-    - name: Populate haproxy config
-      template:
-        src: haproxy.cfg.j2
-        dest: /etc/haproxy/haproxy.cfg
+- name: Populate haproxy config
+  template:
+    src: haproxy.cfg.j2
+    dest: /etc/haproxy/haproxy.cfg
 
-    - name: Restart haproxy service
-      systemd:
-        name: haproxy
-        state: restarted
-  when: ansible_facts.services['haproxy.service'] is not defined
+- name: Reload haproxy service
+  systemd:
+    name: haproxy
+    state: restarted
