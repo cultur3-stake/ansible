@@ -24,26 +24,24 @@ defaults
         errorfile 503 /etc/haproxy/errors/503.http
         errorfile 504 /etc/haproxy/errors/504.http
 
-{% for services in haproxy_services %}
-{% for name, params in services.items() %}
-frontend {{ (params.mode is defined and params.mode) and params.mode or 'http' }}-{{ name }}
-        {% if params.mode is defined and params.mode %}
-        mode {{ params.mode }}
+{% for service in haproxy_services %}
+frontend {{ (service.mode is defined and service.mode) and service.mode or 'http' }}-{{ service.name }}
+        {% if service.mode is defined and service.mode %}
+        mode {{ service.mode }}
         {% else %}
         mode http
         option httplog
         {% endif %}
-        bind :{{ params.frontend_port }}
+        bind :{{ service.frontend_port }}
         {% if with_ssl == true %}
         bind :443 ssl crt /etc/haproxy/certs/{{ target_domain }}.pem
         http-request redirect scheme https unless { ssl_fc }
         {% endif %}
-        default_backend {{ (params.mode is defined and params.mode) and params.mode or 'http' }}-{{ name }}
+        default_backend {{ (service.mode is defined and service.mode) and service.mode or 'http' }}-{{ service.name }}
         option forwardfor
 
-backend {{ (params.mode is defined and params.mode) and params.mode or 'http' }}-{{ name }}
-        mode {{ (params.mode is defined and params.mode) and params.mode or 'http' }}
-        server {{ name }} 127.0.0.1:{{ params.backend_port }}
+backend {{ (service.mode is defined and service.mode) and service.mode or 'http' }}-{{ service.name }}
+        mode {{ (service.mode is defined and service.mode) and service.mode or 'http' }}
+        server {{ service.name }} 127.0.0.1:{{ service.backend_port }}
 
-{% endfor %}
 {% endfor %}

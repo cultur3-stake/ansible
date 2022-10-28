@@ -26,8 +26,9 @@
 - name: Allow tcp 80
   ufw:
     rule: allow
-    port: 80
+    port: '{{ item.frontend_port }}'
     proto: tcp
+  loop: '{{ haproxy_services }}'
 
 - name: Configure SSL if desired
   include_tasks: configure_ssl.yaml
