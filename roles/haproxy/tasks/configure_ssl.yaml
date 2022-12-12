@@ -19,7 +19,7 @@
   file:
     path: /etc/haproxy/certs
     state: directory
-    mode: 770
+    mode: '0770'
 
 - name: Create haproxy certificate by concating fullchain + privkey
   shell: bash -c 'cat /etc/letsencrypt/live/{{ target_domain }}/fullchain.pem /etc/letsencrypt/live/{{ target_domain }}/privkey.pem > /etc/haproxy/certs/{{ target_domain }}.pem'
